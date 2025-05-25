@@ -1,0 +1,24 @@
+Package: pplot
+Title: Panel Data Visualization Tools
+Version: 0.1.0
+Authors@R: 
+    person("Benjamin", "Peeters", 
+           email = "benjaminpeeters@protonmail.com",
+           role = c("aut", "cre"),
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Description: Specialized visualization tools for panel and longitudinal data.
+    Creates publication-quality plots including time series, bar charts, scatter
+    plots, and multi-panel layouts. Part of the macroverse ecosystem.
+License: AGPL (>= 3)
+Encoding: UTF-8
+LazyData: true
+Imports:
+    mvcommon (>= 0.1.0),
+    ggplot2 (>= 3.4.0),
+    scales,
+    patchwork
+Suggests:
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
