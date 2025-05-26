@@ -17,8 +17,10 @@ Imports:
     ggplot2 (>= 3.4.0),
     scales,
     patchwork
+Remotes:
+    macroverse-r/mvcommon
 Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2
