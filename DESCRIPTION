@@ -9,7 +9,7 @@ Authors@R:
 Description: Specialized visualization tools for panel and longitudinal data.
     Creates publication-quality plots including time series, bar charts, scatter
     plots, and multi-panel layouts. Part of the macroverse ecosystem.
-License: AGPL (>= 3)
+License: AGPL (>= 3) + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports:
