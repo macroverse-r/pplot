@@ -627,23 +627,12 @@ pp_plot_scatter <- function(data,                    # data.frame with required 
         stop("At least two variables must be provided")
     }
     
-    # Debug mode setup
-    .print_debug <- function(msg, type = "info") {
-        if (debug) {
-            if (type == "warning") {
-                warning(msg, immediate. = TRUE)
-            } else {
-                message(msg)
-            }
-        }
-    }
-    
     # Handle common_var parameter
     if (is.null(common_var)) {
         common_var <- TRUE  # Default behavior
     }
     use_common_var <- is.character(common_var) || isTRUE(common_var)
-    
+
     # If common_var is a string, validate it exists in variables
     if (is.character(common_var)) {
             if (!common_var %in% variables) {
@@ -654,27 +643,25 @@ pp_plot_scatter <- function(data,                    # data.frame with required 
             # Create pairs with common variable as second element
             plot_pairs <- lapply(y_vars, function(y) c(y, x_var))
     } else if (isTRUE(common_var)) {
-        # Use first variable as common variable (original same_var = TRUE behavior)
+        # Use first variable as common variable
         x_var <- variables[1]
         y_vars <- variables[-1]
         plot_pairs <- lapply(y_vars, function(y) c(y, x_var))
-        
-        if (verbose) {
-            .print_debug(sprintf("Using first variable '%s' as common variable", x_var))
-        }
+
+        mvcommon::mv_debug(sprintf("Using first variable '%s' as common variable", x_var),
+                           verbose, debug, type = "info", "SCATTER")
     } else {
-        # Sequential pairing (original same_var = FALSE behavior)
+        # Sequential pairing
         if (length(variables) %% 2 != 0) {
-            .print_debug(paste("Last variable", variables[length(variables)], 
-                            "will be ignored as number of variables is odd"), 
-                      "warning")
+            mvcommon::mv_debug(paste("Last variable", variables[length(variables)],
+                                     "will be ignored as number of variables is odd"),
+                               verbose, debug, type = "warning", "SCATTER")
             variables <- variables[1:(length(variables) - 1)]
         }
         plot_pairs <- split(variables, ceiling(seq_along(variables)/2))
-        
-        if (verbose) {
-            .print_debug("Using sequential variable pairing")
-        }
+
+        mvcommon::mv_debug("Using sequential variable pairing",
+                           verbose, debug, type = "info", "SCATTER")
     }
     
 
@@ -837,17 +824,17 @@ pp_plot_scatter <- function(data,                    # data.frame with required 
         mvcommon::mv_debug("Creating custom color groups", verbose, debug, type = "info", "COLOR")
         # Custom color groups
         color_mapping <- rep("gray50", nrow(data))  # Default color
-        mvcommon::mv_get_colors() <- c("#4472C4", "#70AD47", "#C00000", "#FFC000", "#7030A0")
-        
+        list_palette <- c("#4472C4", "#70AD47", "#C00000", "#FFC000", "#7030A0")
+
         for (i in seq_along(color)) {
             group_name <- names(color)[i]
             countries <- color[[i]]
             if(verbose) {
-                mvcommon::mv_debug(paste("Group:", group_name, "Countries:", 
-                                paste(countries, collapse=", ")), 
+                mvcommon::mv_debug(paste("Group:", group_name, "Countries:",
+                                paste(countries, collapse=", ")),
                            verbose, debug, type = "info", "COLOR")
             }
-            color_mapping[data$Country %in% countries] <- mvcommon::mv_get_colors()[i]
+            color_mapping[data$Country %in% countries] <- list_palette[i]
         }
         
         if(verbose) {

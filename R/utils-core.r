@@ -404,103 +404,53 @@
 
 
 #' Fast Date Conversion Function
-#' 
+#'
 #' @description
-#' Internal function that efficiently converts date columns in data.frame from character
-#' to Date format. Optimized for performance with vectorized operations.
-#' 
+#' Converts the `Date` column of `data` to class `Date`. Accepts year-only
+#' ("2024"), year-month ("2024-03"), quarter ("2024Q1" / "2024-Q1"), and
+#' ISO-standard date strings — the shapes produced by `macrodata::md_data()`
+#' / `wpd::wp_data()`. `period_type` picks the representative day within the
+#' period for year and quarter inputs.
+#'
 #' @keywords internal
-.fast_convert_dates <- function(data) {
-    if (is.character(data$Date)) {
-        data$Date <- as.Date(data$Date)
+.fast_convert_dates <- function(data, period_type = "middle") {
+    if (!is.character(data$Date)) {
+        return(data)
     }
+    dates <- sub("^X", "", data$Date)
+    result <- as.Date(dates, optional = TRUE)
+
+    mask_year <- is.na(result) & grepl("^\\d{4}$", dates)
+    if (any(mask_year)) {
+        years <- as.numeric(dates[mask_year])
+        result[mask_year] <- switch(period_type,
+            start  = as.Date(paste0(years, "-01-01")),
+            middle = as.Date(paste0(years, "-07-01")),
+            end    = as.Date(paste0(years, "-12-31")))
+    }
+
+    mask_ym <- is.na(result) & grepl("^\\d{4}-\\d{1,2}$", dates)
+    if (any(mask_ym)) {
+        parts <- strsplit(dates[mask_ym], "-")
+        result[mask_ym] <- as.Date(paste0(
+            sapply(parts, "[", 1), "-",
+            sprintf("%02d", as.numeric(sapply(parts, "[", 2))),
+            "-01"))
+    }
+
+    mask_q <- is.na(result) & grepl("^\\d{4}-?Q[1-4]$", dates)
+    if (any(mask_q)) {
+        q_dates <- dates[mask_q]
+        years <- as.numeric(substr(q_dates, 1, 4))
+        quarters <- as.numeric(substr(q_dates, nchar(q_dates), nchar(q_dates)))
+        result[mask_q] <- switch(period_type,
+            start  = as.Date(paste0(years, "-", (quarters - 1) * 3 + 1, "-01")),
+            middle = as.Date(paste0(years, "-", (quarters - 1) * 3 + 2, "-15")),
+            end    = as.Date(paste0(years, "-", quarters * 3, "-",
+                                    c(31, 30, 30, 31)[quarters])))
+    }
+
+    data$Date <- result
     return(data)
 }
 
-#' Helper function for nice debug/verbose printing
-#' @keywords internal
-.print_debug <- function(text, verbose = TRUE, debug = FALSE, type = "info", text_type = "INFO") {
-    # Only print if either verbose or debug is TRUE
-    if (!verbose && !debug) return(NULL)
-    
-    # Define color codes
-    colors <- list(
-        info = .create_color("cyan"),
-        info_loop = .create_color("green"), 
-        debug = .create_color("white"), 
-        wrapper = .create_color("purple", 2),
-        warning = .create_color("red"),
-        missing = .create_color("yellow"),
-        empty = .create_color("blue", "bold")
-        )
-    reset <- "\033[0m"            # Reset color
-    
-    # Get current time
-    current_time <- format(Sys.time(), "%H:%M:%S")
-    
-    # Create prefix based on whether it's verbose or debug
-    prefix <- list(
-        info = paste0(" [",text_type,"]"),      # Cyan for general info
-        info_loop = "  --- ",    # Yellow for warnings
-        debug = "[DEBUG]",      # Red for errors
-        wrapper = "#",     # Green for success
-        warning = "/!\\ ",     # Red for warning
-        missing = "",      # Cyan for general info
-        empty = ""     # Red for warning
-        )
-    
-    # Construct and print the message with color
-    # message <- sprintf("%s%s [%s] %s%s", 
-    #                   colors[[type]], 
-    #                   prefix,
-    #                   current_time,
-    #                   text,
-    #                   reset)
-    message <- sprintf("%s%s %s%s", 
-                      colors[[type]], 
-                      prefix[[type]],
-                      text,
-                      reset)
-    cat(message, "\n")
-}
-
-
-
-
-#' Helper function to create color codes
-#'
-#' @description
-#' Helper function to create color codes
-#'
-#' @param color Character ("cyan", "green", "white", 'black', 'purple', etc.)
-#' @param style Character ("normal", "bold", "dim", "italic", "underline")
-#' @return ANSI escape code
-#'
-#' @keywords internal
-.create_color <- function(color, style = "normal") {
-    # Basic color codes
-    color_codes <- list(
-        black = 30,
-        red = 31,
-        green = 32,
-        yellow = 33,
-        blue = 34,
-        purple = 35,
-        cyan = 36,
-        white = 37
-    )
-    
-    # Style codes
-    style_codes <- list(
-        normal = 0,
-        bold = 1,
-        dim = 2,
-        italic = 3,
-        underline = 4
-    )
-
-    # Create ANSI escape code
-    sprintf("\033[%d;%dm", 
-            style_codes[[style]], 
-            color_codes[[color]])
-}
