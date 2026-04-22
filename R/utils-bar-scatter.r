@@ -159,7 +159,7 @@
         return("Default")
     }
     
-    categories <- .get_ctry_categories(iso_code)
+    categories <- isomapper:::.get_ctry_categories(iso_code)
     
     if (scheme == "Region") {
         regions <- c("AFRICA", "AMERICAS", "ASIA", "EUROPE", "OCEANIA")

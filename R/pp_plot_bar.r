@@ -860,7 +860,7 @@ pp_plot_bar <- function(data,                    # data.frame with required colu
         color_mapping <- .create_variable_darkness(variables, verbose = verbose, debug = debug)
     } else {
         # Use distinct colors for variables, ensuring we skip the first color
-        color_mapping <- setNames(mvcommon::mv_get_colors()[2:(n_vars+1)], variables)
+        color_mapping <- setNames(mvcommon::mv_get_colors("macroverse_colors")[2:(n_vars+1)], variables)
     }
     
     # Create darker versions for error bars and median points

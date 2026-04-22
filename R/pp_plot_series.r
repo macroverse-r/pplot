@@ -225,7 +225,7 @@ pp_plot_series <- function(data,                # data.frame with required colum
     plot <- ggplot2::ggplot(data, ggplot2::aes(x = Date, y = Value, color = Variable)) +
         ggplot2::geom_line(linewidth = 1.2) +
         .scale_y(y_axis, n_breaks = theme$n_breaks) +
-        ggplot2::scale_color_manual(values = mvcommon::mv_get_colors()[1:length(unique(data$Variable))]) +
+        ggplot2::scale_color_manual(values = mvcommon::mv_get_colors("macroverse_colors")[1:length(unique(data$Variable))]) +
         .scale_x(data) +
         ggplot2::labs(x = NULL, color = "") +
         .theme_plot(theme = theme)
@@ -262,7 +262,7 @@ pp_plot_series <- function(data,                # data.frame with required colum
     plot <- ggplot2::ggplot(data, ggplot2::aes(x = Date, y = Value, color = Country)) +
         ggplot2::geom_line(linewidth = 1.2) +
         .scale_y(y_axis, n_breaks = theme$n_breaks) +
-        ggplot2::scale_color_manual(values = mvcommon::mv_get_colors()[1:length(unique(data$Country))]) +
+        ggplot2::scale_color_manual(values = mvcommon::mv_get_colors("macroverse_colors")[1:length(unique(data$Country))]) +
         .scale_x(data) +
         ggplot2::labs(x = NULL,
              y = y_axis,
@@ -472,7 +472,7 @@ pp_plot_series <- function(data,                # data.frame with required colum
     
     data_area$Variable <- factor(data_area$Variable, levels = variable_order)
     
-    color_palette <- c("black", mvcommon::mv_get_colors()[2:length(variable_order)])
+    color_palette <- c("black", mvcommon::mv_get_colors("macroverse_colors")[2:length(variable_order)])
     names(color_palette) <- variable_order
     
     # Create plot
@@ -762,7 +762,7 @@ pp_plot_series <- function(data,                # data.frame with required colum
     plot <- plot +
         .scale_x(data) +
         ggplot2::scale_color_manual(
-            values = mvcommon::mv_get_colors()[1:length(unique(data$Variable))],
+            values = mvcommon::mv_get_colors("macroverse_colors")[1:length(unique(data$Variable))],
             breaks = unique(data$Variable),
             labels = function(x) {
                 paste0(x, " (", ifelse(x %in% right_indicators, "Right", "Left"), ")")
