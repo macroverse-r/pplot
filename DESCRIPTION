@@ -15,11 +15,11 @@ LazyData: true
 Imports:
     mvcommon (>= 0.1.0),
     isomapper (>= 0.1.0),
-    ggplot2 (>= 3.4.0),
+    ggplot2 (>= 3.5.0),
     scales,
     patchwork,
-    cowplot,
     ggrepel,
+    grid,
     grDevices,
     stats
 Remotes:

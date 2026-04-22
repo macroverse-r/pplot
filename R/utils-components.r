@@ -143,15 +143,40 @@
 # LEGEND
 
 
+#' Extract a positional guide-box grob from a built ggplot
+#'
+#' @description
+#' Pulls the `guide-box-<position>` cell from `ggplotGrob(plot)` via the gtable
+#' layout name. Replaces `cowplot::get_legend()` / `cowplot::get_plot_component()`:
+#' under ggplot2 >= 3.5 the legend guide-box was split into per-side slots, and
+#' cowplot's unqualified matcher emits "Multiple components found" and silently
+#' returns the first (often empty) match. This direct lookup avoids both the
+#' warning and the dependency.
+#'
+#' When the plot has no guides, ggplot2 still emits the slot populated with a
+#' `zeroGrob`, which patchwork handles gracefully. The `grid::nullGrob()`
+#' return covers the layout-anomaly case where the slot is missing entirely.
+#'
+#' @keywords internal
+.extract_guide_box <- function(plot, position = c("bottom", "top", "left", "right", "inside")) {
+    position <- match.arg(position)
+    slot <- paste0("guide-box-", position)
+    gt <- ggplot2::ggplotGrob(plot)
+    idx <- which(gt$layout$name == slot)
+    if (length(idx) == 0) return(grid::nullGrob())
+    gt$grobs[[idx[1]]]
+}
+
+
 #' Create Plot Legend Panel with Optimal Layout
-#' 
+#'
 #' @description
 #' Internal function that generates a standalone legend panel with optimized layout.
 #' Handles different plot types and legend styles with automatic sizing.
-#' 
+#'
 #' Used by: .plot_core
-#' Uses: .get_legend_type, .get_legend_columns, get_legend (cowplot)
-#' 
+#' Uses: .get_legend_type, .get_legend_columns, .extract_guide_box
+#'
 #' Features:
 #' - Adaptive column count
 #' - Plot-type specific styling
@@ -193,9 +218,18 @@
         legend_items_display <- unique(data[[legend_type]])
         n_items <- length(legend_items_display)
     }
-    
+
+    # No legend items => return an empty slot. Without this guard,
+    # legend_height below becomes NaN (ceiling(0/0)) and poisons patchwork's
+    # heights vector.
+    if (n_items == 0) {
+        mvcommon::mv_debug("No legend items; returning nullGrob",
+                           verbose, debug, type = "info", "LEGEND")
+        return(list(panel = grid::nullGrob(), height = 0))
+    }
+
     if (verbose) {
-        mvcommon::mv_debug(paste("Legend items (display):", paste(legend_items_display, collapse=", ")), 
+        mvcommon::mv_debug(paste("Legend items (display):", paste(legend_items_display, collapse=", ")),
                    verbose, debug, type = "info", "LEGEND")
     }
     
@@ -218,14 +252,16 @@
         )
     }
     
-    # Get legend panel
-    legend_panel <- cowplot::get_legend(
-        base_plot + 
+    # Extract the composited bottom guide-box from the built plot. See
+    # .extract_guide_box docstring for why we don't use cowplot here.
+    legend_panel <- .extract_guide_box(
+        base_plot +
         ggplot2::theme(
             legend.position = "bottom",
             legend.text = ggplot2::element_text(size = base_size)
         ) +
-        legend_guides
+        legend_guides,
+        position = "bottom"
     )
     
     # Calculate legend height

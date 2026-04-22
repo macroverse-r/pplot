@@ -11,6 +11,9 @@
 ^LICENSE\.md$
 ^LICENSE_COMM\.md$
 
+# R default graphics device side-effect
+Rplots.pdf
+
 # History files
 .Rhistory
 .Rapp.history

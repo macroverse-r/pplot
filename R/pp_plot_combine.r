@@ -48,6 +48,10 @@
 #' @param guides character; method for handling plot guides/legends:
 #'        - "collect": combine legends (default)
 #'        - "keep": maintain separate legends
+#'        See `Legend handling` section for the interaction with child plots
+#'        built via `pp_plot_series`/`pp_plot_bar`/`pp_plot_scatter`, whose
+#'        legends are already baked in as bottom panels and therefore not
+#'        hoisted by `guides = "collect"`.
 #'
 #' @return A patchwork object containing the combined plots
 #'
@@ -72,6 +76,24 @@
 #'
 #' The function automatically adjusts spacing and margins to create a cohesive
 #' visualization while preserving the integrity of individual plots.
+#'
+#' @section Legend handling:
+#' `pp_plot_combine` does not assemble legends itself. Each child plot built via
+#' `pp_plot_series`/`pp_plot_bar`/`pp_plot_scatter` with `legend = TRUE` already
+#' has its legend baked in as a separate bottom panel (extracted from the
+#' ggplot guide-box during construction). Those baked-in panels are flat grobs
+#' inside a patchwork hierarchy, so patchwork's `guides = "collect"` at the
+#' combine level cannot hoist them into a single shared legend — each sub-plot
+#' keeps its own legend in place.
+#'
+#' To get one shared legend for the combined figure:
+#' - Build every child plot with `legend = FALSE` so no per-plot legend is baked in.
+#' - Construct a legend separately (e.g. by building one representative plot
+#'   normally and extracting its legend, or by hand-crafting a `ggplot` whose
+#'   sole purpose is to hold the shared legend).
+#' - Pass that legend grob via `pp_plot_combine(..., legend = <grob>)`; it will
+#'   be appended below the plot grid, with relative heights controlled by
+#'   `theme$legend_heights` (defaults to `c(20, 2)`).
 #'
 #' @examples
 #' Create data
